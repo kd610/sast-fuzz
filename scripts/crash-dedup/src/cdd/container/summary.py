@@ -13,11 +13,11 @@
 # limitations under the License.
 
 import os
-from collections import namedtuple
+from collections import defaultdict, namedtuple
 from pathlib import Path
 from typing import List, Optional, Tuple
 
-from cdd.container.san import SanitizerOutput
+from cdd.container.san import SanitizerOutput, StackFrame, StackTrace
 
 # CSV separator
 CSV_SEP: str = ","
@@ -47,9 +47,28 @@ class DedupSummary:
         self.summary.append(DedupEntry(id, key, elems))
 
     def to_csv(self, file: Path) -> None:
+        """
+        Write the deduplication summary to a CSV file.
+
+        Args:
+            file (Path): The file to write the summary to.
+        """
+
         with file.open("w+") as csv_file:
             csv_file.write(
-                "bug_id,n_dedup_frames,consider_filepaths,consider_lines,input_name,sanitizer,vuln_type,stack_trace,n_frames"
+                CSV_SEP.join(
+                    [
+                        "bug_id",
+                        "n_dedup_frames",
+                        "consider_filepaths",
+                        "consider_lines",
+                        "input_file",
+                        "sanitizer",
+                        "vuln_type",
+                        "stack_trace",
+                        "n_total_frames",
+                    ]
+                )
                 + os.linesep
             )
 
@@ -74,6 +93,58 @@ class DedupSummary:
                     )
 
                     csv_file.write(line + os.linesep)
+
+    @classmethod
+    def from_csv(cls, file: Path) -> "DedupSummary":
+        """
+        Read a deduplication summary from a CSV file.
+
+        Args:
+            file (Path): The file to read the summary from.
+
+        Returns:
+            DedupSummary: The deduplication summary.
+        """
+
+        def get_stack_frame(frame: str) -> StackFrame:
+            values = frame.split(":")
+            return StackFrame(int(values[0].lstrip("#")), values[1], values[2], int(values[3]))
+
+        def get_stack_trace(trace: str) -> StackTrace:
+            return [get_stack_frame(frame) for frame in trace.split("-")]
+
+        def get_csv_entries(csv_line: str) -> Tuple[int, Optional[int], bool, bool, str, str, str, StackTrace, int]:
+            values = csv_line.strip().split(CSV_SEP)
+            return (
+                int(values[0]),
+                int(values[1]) if values[1] != "-" else None,
+                True if values[2].lower() == "true" else False,
+                True if values[3].lower() == "true" else False,
+                values[4],
+                values[5],
+                values[6],
+                get_stack_trace(values[7]),
+                int(values[8]),
+            )
+
+        with open(file, "r") as csv_file:
+            lines = csv_file.readlines()
+
+            _, n_dedup_frames, consider_filepaths, consider_lines, _, _, _, _, _ = get_csv_entries(lines[1])
+
+            dedup_dict = defaultdict(list)
+
+            for line in lines[1:]:
+                bug_id, _, _, _, input_file, sanitizer, vuln_type, stack_trace, _ = get_csv_entries(line)
+
+                # Group sanitizer outputs by bug ID
+                dedup_dict[bug_id].append(SanitizerOutput(input_file, sanitizer, vuln_type, stack_trace))
+
+            dedup_list = [
+                DedupEntry(bug_id, None, sanitizer_outputs) for bug_id, sanitizer_outputs in dedup_dict.items()
+            ]
+
+            return DedupSummary(n_dedup_frames, consider_filepaths, consider_lines, dedup_list)
 
     def __eq__(self, o: object) -> bool:
         if not isinstance(o, DedupSummary):
