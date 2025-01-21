@@ -34,8 +34,8 @@ DEFAULT_CONFIG_FILE = Path.cwd() / "config.yml"
 app = typer.Typer()
 
 
-@app.command()
-def main(
+@app.command(help="Run the crash deduplication.")
+def run(
     shell_command: Annotated[
         Optional[str],
         typer.Option(
