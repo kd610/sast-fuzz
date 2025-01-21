@@ -80,9 +80,9 @@ class DedupSummary:
                             str(self.n_frames) if self.n_frames else "-",
                             str(self.consider_filepaths),
                             str(self.consider_lines),
-                            str(san_output.input_id).replace(CSV_SEP, "-"),
-                            san_output.san,
-                            san_output.vtype,
+                            str(san_output.input_file).replace(CSV_SEP, "-"),
+                            san_output.sanitizer,
+                            san_output.vuln_type,
                             trace_to_str(san_output.stack_trace),
                             str(len(san_output.stack_trace)),
                         )
