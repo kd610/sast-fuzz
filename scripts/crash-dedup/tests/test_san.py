@@ -94,7 +94,7 @@ class TestSanitizerOutput(unittest.TestCase):
                     StackFrame(4, "c2mir.c", "pre", 3807),
                     StackFrame(5, "-", "-", -1),
                     StackFrame(6, "-", "-", -1),
-                ]
+                ],
             ),
             SanitizerOutput(
                 "/path/to/file23",
@@ -103,9 +103,9 @@ class TestSanitizerOutput(unittest.TestCase):
                 [
                     StackFrame(0, "asan_malloc_linux.cpp", "realloc", 164),
                     StackFrame(1, "public.c", "defaultRealloc", 1092),
-                ]
+                ],
             ),
-            SanitizerOutput("/path/to/file24", "addresssanitizer", "segv", [])
+            SanitizerOutput("/path/to/file24", "addresssanitizer", "segv", []),
         ]
 
         # Act

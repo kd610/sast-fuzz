@@ -18,11 +18,70 @@ from enum import Enum, auto
 from pathlib import Path
 from typing import List, Optional, Tuple
 
+# Stack frame separator
+STACK_FRAME_SEP: str = ":"
+
+# Stack trace separator
+STACK_TRACE_SEP: str = "="
+
 # Stack frame information
 StackFrame = namedtuple("StackFrame", ["id", "file", "function", "line"])
 
 # Stack trace, i.e. list of stack frames
 StackTrace = List[StackFrame]
+
+
+def frame_to_str(frame: StackFrame) -> str:
+    """
+    Convert a stack frame to a string.
+
+    Args:
+        frame (StackFrame): The stack frame to convert.
+
+    Returns:
+        str: The string representation.
+    """
+    return STACK_FRAME_SEP.join([f"#{str(frame.id)}", frame.file, frame.function, str(frame.line)])
+
+
+def str_to_frame(string: str) -> StackFrame:
+    """
+    Convert a string to a stack frame.
+
+    Args:
+        string (str): The string to convert.
+
+    Returns:
+        StackFrame: The stack frame.
+    """
+    values = string.split(STACK_FRAME_SEP)
+    return StackFrame(int(values[0].lstrip("#")), values[1], values[2], int(values[3]))
+
+
+def trace_to_str(trace: StackTrace) -> str:
+    """
+    Convert a stack trace to a string.
+
+    Args:
+        trace (StackTrace): The stack trace to convert.
+
+    Returns:
+        str: The string representation.
+    """
+    return STACK_TRACE_SEP.join([frame_to_str(frame) for frame in trace])
+
+
+def str_to_trace(string: str) -> StackTrace:
+    """
+    Convert a string to a stack trace.
+
+    Args:
+        string (str): The string to convert.
+
+    Returns:
+        StackTrace: The stack trace.
+    """
+    return [str_to_frame(frame) for frame in string.split(STACK_TRACE_SEP)]
 
 
 def find_input(line: str) -> Optional[str]:
@@ -86,10 +145,10 @@ class SanitizerOutput:
     Sanitizer output container.
     """
 
-    def __init__(self, input_id: str, san: str, vtype: str, stack_trace: StackTrace) -> None:
-        self.input_id = input_id
-        self.san = san
-        self.vtype = vtype
+    def __init__(self, input_file: str, sanitizer: str, vuln_type: str, stack_trace: StackTrace) -> None:
+        self.input_file = input_file
+        self.sanitizer = sanitizer
+        self.vuln_type = vuln_type
         self.stack_trace = stack_trace
 
     def sorting_key(
@@ -114,13 +173,13 @@ class SanitizerOutput:
             else:
                 stack_trace = [(t.id, t.function, t.line) for t in stack_trace]  # type: ignore
 
-        return self.san, self.vtype, stack_trace
+        return self.sanitizer, self.vuln_type, stack_trace
 
     def __eq__(self, o: object) -> bool:
         if not isinstance(o, SanitizerOutput):
             return False
 
-        return self.san == o.san and self.vtype == o.vtype and self.stack_trace == o.stack_trace
+        return self.sanitizer == o.sanitizer and self.vuln_type == o.vuln_type and self.stack_trace == o.stack_trace
 
     @classmethod
     def from_file(cls, sanitizer_file: Path) -> "SanitizerOutput":

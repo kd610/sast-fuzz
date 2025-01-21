@@ -17,7 +17,7 @@ from collections import defaultdict, namedtuple
 from pathlib import Path
 from typing import List, Optional, Tuple
 
-from cdd.container.san import SanitizerOutput, StackFrame, StackTrace
+from cdd.container.san import SanitizerOutput, StackTrace, str_to_trace, trace_to_str
 
 # CSV separator
 CSV_SEP: str = ","
@@ -74,20 +74,16 @@ class DedupSummary:
 
             for entry in self.summary:
                 for san_output in entry.elems:
-                    frame_str = str(self.n_frames) if self.n_frames else "-"
-                    stack_trace = "-".join(
-                        [f"#{frame.id}:{frame.file}:{frame.function}:{frame.line}" for frame in san_output.stack_trace]
-                    )
                     line = CSV_SEP.join(
                         (
                             str(entry.bug_id),
-                            frame_str,
+                            str(self.n_frames) if self.n_frames else "-",
                             str(self.consider_filepaths),
                             str(self.consider_lines),
                             str(san_output.input_id).replace(CSV_SEP, "-"),
                             san_output.san,
                             san_output.vtype,
-                            stack_trace,
+                            trace_to_str(san_output.stack_trace),
                             str(len(san_output.stack_trace)),
                         )
                     )
@@ -106,13 +102,6 @@ class DedupSummary:
             DedupSummary: The deduplication summary.
         """
 
-        def get_stack_frame(frame: str) -> StackFrame:
-            values = frame.split(":")
-            return StackFrame(int(values[0].lstrip("#")), values[1], values[2], int(values[3]))
-
-        def get_stack_trace(trace: str) -> StackTrace:
-            return [get_stack_frame(frame) for frame in trace.split("-")]
-
         def get_csv_entries(csv_line: str) -> Tuple[int, Optional[int], bool, bool, str, str, str, StackTrace, int]:
             values = csv_line.strip().split(CSV_SEP)
             return (
@@ -123,20 +112,19 @@ class DedupSummary:
                 values[4],
                 values[5],
                 values[6],
-                get_stack_trace(values[7]),
+                str_to_trace(values[7]),
                 int(values[8]),
             )
 
         with open(file, "r") as csv_file:
             lines = csv_file.readlines()
 
-            _, n_dedup_frames, consider_filepaths, consider_lines, _, _, _, _, _ = get_csv_entries(lines[1])
+            _, n_dedup_frames, consider_filepaths, consider_lines, *_ = get_csv_entries(lines[1])
 
             dedup_dict = defaultdict(list)
 
             for line in lines[1:]:
                 bug_id, _, _, _, input_file, sanitizer, vuln_type, stack_trace, _ = get_csv_entries(line)
-
                 # Group sanitizer outputs by bug ID
                 dedup_dict[bug_id].append(SanitizerOutput(input_file, sanitizer, vuln_type, stack_trace))
 

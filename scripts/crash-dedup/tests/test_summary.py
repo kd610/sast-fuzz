@@ -35,9 +35,9 @@ class TestSummary(unittest.TestCase):
                     key=None,
                     elems=[
                         SanitizerOutput(
-                            input_id="/path/to/file01",
-                            san="addresssanitizer",
-                            vtype="segv",
+                            input_file="/path/to/file01",
+                            sanitizer="addresssanitizer",
+                            vuln_type="segv",
                             stack_trace=[
                                 StackFrame(id=0, file="outputscript.c", function="outputSWF_TEXT_RECORD", line=1429),
                                 StackFrame(id=1, file="outputscript.c", function="outputSWF_DEFINETEXT", line=1471),
@@ -47,9 +47,9 @@ class TestSummary(unittest.TestCase):
                             ],
                         ),
                         SanitizerOutput(
-                            input_id="/path/to/file03",
-                            san="addresssanitizer",
-                            vtype="segv",
+                            input_file="/path/to/file03",
+                            sanitizer="addresssanitizer",
+                            vuln_type="segv",
                             stack_trace=[
                                 StackFrame(id=0, file="outputscript.c", function="outputSWF_TEXT_RECORD", line=1429),
                                 StackFrame(id=1, file="outputscript.c", function="outputSWF_DEFINETEXT", line=1471),
@@ -65,9 +65,9 @@ class TestSummary(unittest.TestCase):
                     key=None,
                     elems=[
                         SanitizerOutput(
-                            input_id="/path/to/file02",
-                            san="addresssanitizer",
-                            vtype="segv",
+                            input_file="/path/to/file02",
+                            sanitizer="addresssanitizer",
+                            vuln_type="segv",
                             stack_trace=[
                                 StackFrame(id=0, file="decompile.c", function="OpCode", line=868),
                                 StackFrame(id=1, file="decompile.c", function="decompileINCR_DECR", line=1474),
