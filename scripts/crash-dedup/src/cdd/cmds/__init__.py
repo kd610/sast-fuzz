@@ -11,17 +11,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-import logging
-import sys
-
-import typer
-
-from cdd.cmds import merge, run
-
-logging.basicConfig(format="%(asctime)s crash-dedup[%(levelname)s]: %(message)s", level=logging.INFO, stream=sys.stdout)
-
-app = typer.Typer()
-
-app.command(name="merge", help="Merge multiple summary files.")(merge.main)
-app.command(name="run", help="Run the crash deduplication.")(run.main)
