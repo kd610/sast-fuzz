@@ -29,7 +29,7 @@ def check_grouping(summary: DedupSummary, expected: Set[str]) -> bool:
     :param expected:
     :return:
     """
-    bug_id_map = {info.input_id: entry.bug_id for entry in summary.summary for info in entry.elems}
+    bug_id_map = {info.input_file: entry.bug_id for entry in summary.summary for info in entry.elems}
 
     bug_id = bug_id_map[list(expected)[0]]
     actual = set([s for s in bug_id_map.keys() if bug_id_map[s] == bug_id])

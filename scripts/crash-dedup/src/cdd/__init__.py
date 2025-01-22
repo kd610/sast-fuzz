@@ -20,6 +20,9 @@ import yaml
 
 InputConfig = namedtuple("InputConfig", ["blacklist"])
 
+# Path of the default config file.
+DEFAULT_CONFIG_FILE: Path = Path.cwd() / "config.yml"
+
 
 @dataclass
 class AppConfig:
