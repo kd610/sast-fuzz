@@ -15,7 +15,80 @@
 import unittest
 from pathlib import Path
 
-from cdd.container.san import SanitizerOutput, StackFrame
+from cdd.container.san import (
+    SanitizerOutput,
+    StackFrame,
+    frame_to_string,
+    string_to_frame,
+    trace_to_string,
+    string_to_trace,
+    STACK_FRAME_SEP,
+    STACK_TRACE_SEP,
+)
+
+
+class TestStackFrame(unittest.TestCase):
+    def test_frame_to_string(self) -> None:
+        # Arrange
+        frame = StackFrame(0, "/path/to/file", "func", 10)
+        expected = f"#0{STACK_FRAME_SEP}/path/to/file{STACK_FRAME_SEP}func{STACK_FRAME_SEP}10"
+
+        # Act
+        actual = frame_to_string(frame)
+
+        # Assert
+        self.assertEqual(expected, actual)
+
+    def test_string_to_frame(self) -> None:
+        # Arrange
+        frame = f"#0{STACK_FRAME_SEP}/path/to/file{STACK_FRAME_SEP}func{STACK_FRAME_SEP}10"
+        expected = StackFrame(0, "/path/to/file", "func", 10)
+
+        # Act
+        actual = string_to_frame(frame)
+
+        # Assert
+        self.assertEqual(expected, actual)
+
+
+class TestStackTrace(unittest.TestCase):
+    def test_trace_to_string(self) -> None:
+        # Arrange
+        trace = [
+            StackFrame(0, "/path/to/file01", "funcA", 10),
+            StackFrame(1, "/path/to/file02", "funcB", 20),
+            StackFrame(2, "/path/to/file03", "funcC", 30),
+        ]
+        expected = (
+              f"#0{STACK_FRAME_SEP}/path/to/file01{STACK_FRAME_SEP}funcA{STACK_FRAME_SEP}10{STACK_TRACE_SEP}"
+            + f"#1{STACK_FRAME_SEP}/path/to/file02{STACK_FRAME_SEP}funcB{STACK_FRAME_SEP}20{STACK_TRACE_SEP}"
+            + f"#2{STACK_FRAME_SEP}/path/to/file03{STACK_FRAME_SEP}funcC{STACK_FRAME_SEP}30"
+        )
+
+        # Act
+        actual = trace_to_string(trace)
+
+        # Assert
+        self.assertEqual(expected, actual)
+
+    def test_string_to_trace(self) -> None:
+        # Arrange
+        trace = (
+              f"#0{STACK_FRAME_SEP}/path/to/file01{STACK_FRAME_SEP}funcA{STACK_FRAME_SEP}10{STACK_TRACE_SEP}"
+            + f"#1{STACK_FRAME_SEP}/path/to/file02{STACK_FRAME_SEP}funcB{STACK_FRAME_SEP}20{STACK_TRACE_SEP}"
+            + f"#2{STACK_FRAME_SEP}/path/to/file03{STACK_FRAME_SEP}funcC{STACK_FRAME_SEP}30"
+        )
+        expected = [
+            StackFrame(0, "/path/to/file01", "funcA", 10),
+            StackFrame(1, "/path/to/file02", "funcB", 20),
+            StackFrame(2, "/path/to/file03", "funcC", 30),
+        ]
+
+        # Act
+        actual = string_to_trace(trace)
+
+        # Assert
+        self.assertEqual(expected, actual)
 
 
 class TestSanitizerOutput(unittest.TestCase):

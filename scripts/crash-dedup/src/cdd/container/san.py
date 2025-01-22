@@ -31,7 +31,7 @@ StackFrame = namedtuple("StackFrame", ["id", "file", "function", "line"])
 StackTrace = List[StackFrame]
 
 
-def frame_to_str(frame: StackFrame) -> str:
+def frame_to_string(frame: StackFrame) -> str:
     """
     Convert a stack frame to a string.
 
@@ -44,7 +44,7 @@ def frame_to_str(frame: StackFrame) -> str:
     return STACK_FRAME_SEP.join([f"#{str(frame.id)}", frame.file, frame.function, str(frame.line)])
 
 
-def str_to_frame(string: str) -> StackFrame:
+def string_to_frame(string: str) -> StackFrame:
     """
     Convert a string to a stack frame.
 
@@ -58,7 +58,7 @@ def str_to_frame(string: str) -> StackFrame:
     return StackFrame(int(values[0].lstrip("#")), values[1], values[2], int(values[3]))
 
 
-def trace_to_str(trace: StackTrace) -> str:
+def trace_to_string(trace: StackTrace) -> str:
     """
     Convert a stack trace to a string.
 
@@ -68,10 +68,10 @@ def trace_to_str(trace: StackTrace) -> str:
     Returns:
         str: The string representation.
     """
-    return STACK_TRACE_SEP.join([frame_to_str(frame) for frame in trace])
+    return STACK_TRACE_SEP.join([frame_to_string(frame) for frame in trace])
 
 
-def str_to_trace(string: str) -> StackTrace:
+def string_to_trace(string: str) -> StackTrace:
     """
     Convert a string to a stack trace.
 
@@ -81,7 +81,7 @@ def str_to_trace(string: str) -> StackTrace:
     Returns:
         StackTrace: The stack trace.
     """
-    return [str_to_frame(frame) for frame in string.split(STACK_TRACE_SEP)]
+    return [string_to_frame(frame) for frame in string.split(STACK_TRACE_SEP)]
 
 
 def find_input(line: str) -> Optional[str]:

@@ -82,6 +82,7 @@ def main(
 
         summary = group_by(sanitizer_infos, n_frames, consider_filepaths, consider_lines)
         summary.to_csv(output_file)
+
     except Exception as ex:
         logging.error(ex)
         exit(1)
