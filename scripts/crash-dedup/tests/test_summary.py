@@ -82,6 +82,22 @@ class TestSummary(unittest.TestCase):
                         )
                     ],
                 ),
+                DedupEntry(
+                    bug_id=2,
+                    key=None,
+                    elems=[
+                        SanitizerOutput(
+                            input_file="/path/to/file04",
+                            sanitizer="addresssanitizer",
+                            vuln_type="segv",
+                            stack_trace=[
+                                StackFrame(id=0, file="-", function="-", line=-1),
+                                StackFrame(id=1, file="-", function="-", line=-1),
+                                StackFrame(id=2, file="-", function="-", line=-1),
+                            ],
+                        )
+                    ],
+                ),
             ],
         )
 

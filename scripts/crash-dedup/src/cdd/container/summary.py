@@ -17,7 +17,7 @@ from collections import defaultdict, namedtuple
 from pathlib import Path
 from typing import List, Optional, Tuple
 
-from cdd.container.san import SanitizerOutput, StackTrace, str_to_trace, trace_to_str
+from cdd.container.san import SanitizerOutput, StackTrace, string_to_trace, trace_to_string
 
 # CSV separator
 CSV_SEP: str = ","
@@ -83,7 +83,7 @@ class DedupSummary:
                             str(san_output.input_file).replace(CSV_SEP, "-"),
                             san_output.sanitizer,
                             san_output.vuln_type,
-                            trace_to_str(san_output.stack_trace),
+                            trace_to_string(san_output.stack_trace),
                             str(len(san_output.stack_trace)),
                         )
                     )
@@ -112,7 +112,7 @@ class DedupSummary:
                 values[4],
                 values[5],
                 values[6],
-                str_to_trace(values[7]),
+                string_to_trace(values[7]),
                 int(values[8]),
             )
 
