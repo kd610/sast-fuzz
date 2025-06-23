@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Dict, List, Tuple
 
 from sfa import ScoreWeights
-from sfa.analysis import GroupedSASTFlag, SASTFlags, div
+from sfa.analysis import GroupedSASTFlag, SASTFlags, div, GroupedSASTFlag_with_funcname
 
 # Decimal precision of the vulnerability scores
 SCORE_PRECISION = 3
@@ -196,7 +196,7 @@ class BasicBlockV2Grouping(SASTFlagGrouping):
                 bb_vulns = {f"{flag.vuln}:{flag.line}" for flag in bb_flags}
 
                 grouped_flags.add(
-                    GroupedSASTFlag(
+                    GroupedSASTFlag_with_funcname(
                         CONCAT_CHAR.join(bb_tools),
                         bb_info.file,
                         bb_info.line_start,
