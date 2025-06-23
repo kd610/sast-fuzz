@@ -29,8 +29,13 @@ GroupedSASTFlag = namedtuple(
     ["tool", "file", "line", "vuln", "n_flg_lines", "n_all_lines", "n_run_tools", "n_all_tools", "score"],
 )
 
+GroupedSASTFlag_with_funcname = namedtuple(
+    "GroupedSASTFlag",
+    ["tool", "file", "line", "vuln", "n_flg_lines", "n_all_lines", "n_run_tools", "n_all_tools", "score", "func_name"],
+)
+
 # SAST flag type
-SASTFlagType = Union[SASTFlag, GroupedSASTFlag]
+SASTFlagType = Union[SASTFlag, GroupedSASTFlag, GroupedSASTFlag_with_funcname]
 
 
 def div(a: Union[int, float], b: Union[int, float]) -> float:
