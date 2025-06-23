@@ -116,6 +116,7 @@ class BasicBlockGrouping(SASTFlagGrouping):
                     n_run_tools,
                     n_all_tools,
                     score,
+                    bb_id,
                 )
             )
 
@@ -205,6 +206,8 @@ class BasicBlockV2Grouping(SASTFlagGrouping):
                         n_run_tools,
                         n_all_tools,
                         score,
+                        # Add function name to the grouped flag
+                        func_name,
                     )
                 )
 
