@@ -6174,8 +6174,9 @@ u8 common_fuzz_stuff(char **argv, u8 *out_buf, u32 len) {
             }
         }
 
-        fprintf(stats_fd, "%d,%llu,%s,%d,%d,%d,%d,%d,%llu\n", fuzz_dur, cycle_count, ((explore_status) ? "cov" : "dir"),
-                init_cycle_interval, cycle_interval, n_tbbs, n_tbbs_hit, n_tbbs_finished, unique_crashes);
+        double target_bb_coverage = (n_tbbs > 0) ? (double)n_tbbs_hit / n_tbbs : 0.0;
+        fprintf(stats_fd, "%d,%llu,%s,%d,%d,%d,%d,%d,%.6f,%llu\n", fuzz_dur, cycle_count, ((explore_status) ? "cov" : "dir"),
+                init_cycle_interval, cycle_interval, n_tbbs, n_tbbs_hit, n_tbbs_finished, target_bb_coverage, unique_crashes);
 
         // Enforce file write operation ...
         fflush(stats_fd);
@@ -9446,7 +9447,8 @@ void usage(u8 *argv0) {
 
          "  -T text       - text banner to show on the screen\n"
          "  -M / -S id    - distributed mode (see parallel_fuzzing.txt)\n"
-         "  -C            - crash exploration mode (the peruvian rabbit thing)\n\n"
+         "  -C            - crash exploration mode (the peruvian rabbit thing)\n"
+         "  -s secs       - stats output interval in seconds (default: 900 [15min])\n\n"
 
          "For additional tips, please consult %s/README.\n\n",
 
@@ -10248,7 +10250,7 @@ int main(int argc, char **argv) {
     gettimeofday(&tv, &tz);
     srandom(tv.tv_sec ^ tv.tv_usec ^ getpid());
 
-    while ((opt = getopt(argc, argv, "+i:o:w:f:m:t:T:E:dnCB:S:M:x:Qz:c:jul:r:v:")) > 0) {
+    while ((opt = getopt(argc, argv, "+i:o:w:f:m:t:T:E:dnCB:S:M:x:Qz:c:jul:r:v:s:")) > 0) {
         switch (opt) {
         case 'i': /* input dir */
 
@@ -10551,6 +10553,19 @@ int main(int argc, char **argv) {
             break;
         }
 
+#ifdef SFZ_OUTPUT_STATS
+        case 's': {
+            if (sscanf(optarg, "%llu", &stats_interval) < 1 || optarg[0] == '-') {
+                FATAL("Bad syntax used for -s");
+            }
+            if (stats_interval < 1) {
+                FATAL("Invalid value of -s (must be >= 1 second)");
+            }
+
+            break;
+        }
+#endif
+
         default:
 
             usage(argv[0]);
@@ -10715,8 +10730,8 @@ int main(int argc, char **argv) {
         FATAL("Could not create the SASTFuzz stats file!");
     }
 
-    fprintf(stats_fd, "%s,%s,%s,%s,%s,%s,%s,%s,%s\n", "fuzzing_dur", "cycle_count", "fuzzing_mode", "init_cycle_length",
-            "cycle_interval", "n_target_bbs", "n_target_bbs_hit", "n_target_bbs_finished", "n_unique_crashes");
+    fprintf(stats_fd, "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n", "fuzzing_dur", "cycle_count", "fuzzing_mode", "init_cycle_length",
+            "cycle_interval", "n_target_bbs", "n_target_bbs_hit", "n_target_bbs_finished", "target_bb_coverage", "n_unique_crashes");
 
     ck_free(stats_fname);
 #endif
