@@ -10226,6 +10226,78 @@ void readCondition() {
     }
 }
 
+/* Write CSV files listing reached and unreached target basic blocks. */
+static void output_target_reachability_csvs(void) {
+    char *targets_path = alloc_printf("%s/targets.txt", config_dir);
+    FILE *tf = fopen(targets_path, "r");
+    ck_free(targets_path);
+
+    if (!tf) {
+        WARNF("Could not open targets.txt in config dir to write reachability CSVs");
+        return;
+    }
+
+    char *reached_path = alloc_printf("%s/reached_targets.csv", out_dir);
+    char *unreached_path = alloc_printf("%s/unreached_targets.csv", out_dir);
+    FILE *rf = fopen(reached_path, "w");
+    FILE *uf = fopen(unreached_path, "w");
+
+    if (!rf || !uf) {
+        WARNF("Could not create reached/unreached target CSV files in output dir");
+        if (rf) {
+            fclose(rf);
+        }
+        if (uf) {
+            fclose(uf);
+        }
+        ck_free(reached_path);
+        ck_free(unreached_path);
+        fclose(tf);
+        return;
+    }
+
+    fprintf(rf, "index,score,n_input_execs,debug_info\n");
+    fprintf(uf, "index,score,n_input_execs,debug_info\n");
+
+    ck_free(reached_path);
+    ck_free(unreached_path);
+
+    char line[4096];
+    /* Skip first line containing count */
+    if (!fgets(line, sizeof(line), tf)) {
+        fclose(tf);
+        fclose(rf);
+        fclose(uf);
+        return;
+    }
+
+    while (fgets(line, sizeof(line), tf)) {
+        unsigned int idx = 0;
+        float score = 0.0f;
+        char dbg[4096] = {0};
+
+        int parsed = sscanf(line, "%u %f %[^\n]", &idx, &score, dbg);
+
+        if (parsed >= 2) {
+            u64 execs = 0;
+            if (idx < n_tbbs && tbb_infos && tbb_infos[idx]) {
+                execs = tbb_infos[idx]->n_input_execs;
+            }
+
+            FILE *outf = execs > 0 ? rf : uf;
+            if (parsed == 3) {
+                fprintf(outf, "%u,%.6f,%llu,%s\n", idx, score, (unsigned long long)execs, dbg);
+            } else {
+                fprintf(outf, "%u,%.6f,%llu,\n", idx, score, (unsigned long long)execs);
+            }
+        }
+    }
+
+    fclose(tf);
+    fclose(rf);
+    fclose(uf);
+}
+
 /* Main entry point */
 
 int main(int argc, char **argv) {
@@ -10918,6 +10990,9 @@ stop_fuzzing:
              "    (For info on resuming, see %s/README.)\n",
              doc_path);
     }
+
+    /* Emit reached/unreached target BB CSVs at end of fuzzing */
+    output_target_reachability_csvs();
 
     fclose(plot_file);
     destroy_queue();
